@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+# Optional: install openai to enable AI-based command parsing.
+# openai

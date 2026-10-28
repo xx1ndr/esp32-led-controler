@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111210">
+  <title>AIOT / Device Control</title>
+
+  <style>
+    :root {
+      --bg: #111210;
+      --panel: #191a17;
+      --panel-2: #20211d;
+      --line: #383932;
+      --text: #efeee5;
+      --muted: #929389;
+      --red: #ff493c;
+      --green: #b8d98a;
+      --mono: "Consolas", "Courier New", monospace;
+      --sans: "Arial", "Helvetica Neue", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    button, input { font: inherit; }
+
+    button {
+      cursor: pointer;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 12px 15px;
+      text-align: left;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+
+    button:hover {
+      border-color: var(--red);
+    }
+
+    button:focus-visible, input:focus-visible {
+      outline: 2px solid var(--red);
+      outline-offset: 3px;
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: wait;
+    }
+
+    .topbar {
+      min-height: 58px;
+      padding: 0 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    .brand-mark {
+      color: var(--red);
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .top-status {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font: 11px var(--mono);
+      letter-spacing: .5px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      background: var(--red);
+      display: inline-block;
+    }
+
+    .dot.online { background: var(--green); }
+
+    main {
+      width: min(1180px, 90%);
+      margin: 0 auto;
+    }
+
+    .hero {
+      padding: 55px 0 35px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 25px;
+      align-items: end;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      margin: 0 0 18px;
+      color: var(--red);
+      font: 11px var(--mono);
+      letter-spacing: 2px;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 720px;
+      font-size: clamp(38px, 7vw, 78px);
+      font-weight: 800;
+      line-height: .95;
+      letter-spacing: -4px;
+      text-transform: uppercase;
+    }
+
+    h1 span {
+      display: block;
+      color: var(--red);
+    }
+
+    .hero-note {
+      max-width: 240px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .section-label {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin: 0 0 22px;
+      font: 11px var(--mono);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .section-label span { color: var(--red); }
+
+    .overview {
+      padding: 30px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-top: 1px solid var(--line);
+      border-left: 1px solid var(--line);
+    }
+
+    .metric {
+      min-height: 132px;
+      padding: 19px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      min-width: 0;
+    }
+
+    .metric-name {
+      color: var(--muted);
+      font: 10px var(--mono);
+      letter-spacing: 1px;
+    }
+
+    .metric-value {
+      margin-top: 18px;
+      overflow-wrap: anywhere;
+      font: 700 clamp(19px, 2.5vw, 28px) var(--mono);
+    }
+
+    .metric-value.red { color: var(--red); }
+
+    .metric-note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+      gap: 36px;
+      padding: 35px 0;
+    }
+
+    .section {
+      min-width: 0;
+      margin-bottom: 34px;
+    }
+
+    .section-heading {
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -.4px;
+    }
+
+    .section-description {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .connection-fields {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font: 10px var(--mono);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    input {
+      width: 100%;
+      min-width: 0;
+      padding: 12px;
+      color: var(--text);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 0;
+    }
+
+    input::placeholder { color: #66675f; }
+
+    .field-help {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 13px;
+    }
+
+    .button-primary {
+      background: var(--red);
+      color: #17110f;
+      border-color: var(--red);
+      font-weight: 800;
+    }
+
+    .button-primary:hover {
+      background: #ff6a5e;
+      color: #111;
+    }
+
+    .button-neutral { background: transparent; }
+
+    .command-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 17px;
+    }
+
+    .command {
+      min-height: 58px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .command .index {
+      color: var(--red);
+      font: 11px var(--mono);
+    }
+
+    .command.selected {
+      border-color: var(--red);
+      background: #2a1b18;
+    }
+
+    .command.selected .index { color: var(--text); }
+
+    .chat-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+    }
+
+    pre {
+      width: 100%;
+      min-height: 76px;
+      max-height: 300px;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      padding: 15px;
+      margin: 0;
+      background: #0c0d0b;
+      border: 1px solid var(--line);
+      color: #c6c7ba;
+      font: 12px/1.7 var(--mono);
+    }
+
+    .output-label {
+      margin: 20px 0 9px;
+      color: var(--muted);
+      font: 10px var(--mono);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .notice {
+      min-height: 42px;
+      margin: 16px 0 0;
+      padding: 11px 13px;
+      border-left: 2px solid var(--red);
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 20px 0 30px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font: 10px var(--mono);
+    }
+
+    @media (max-width: 760px) {
+      .hero { grid-template-columns: 1fr; padding-top: 40px; }
+      .hero-note { max-width: 400px; }
+      .workspace { grid-template-columns: 1fr; gap: 0; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      h1 { letter-spacing: -2px; }
+      footer { flex-direction: column; }
+    }
+
+    @media (max-width: 420px) {
+      main { width: 92%; }
+      .topbar { padding: 0 4%; }
+      .metric { padding: 13px; min-height: 115px; }
+      .command-grid { grid-template-columns: 1fr; }
+      .chat-row { grid-template-columns: 1fr; }
+      .chat-row button { text-align: center; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">/</span>
+      <span>AIOT<span style="color:var(--red)">.</span>SYS</span>
+    </div>
+
+    <div class="top-status">
+      <span id="statusDot" class="dot"></span>
+      <span id="topStatus">WAITING FOR DEVICE</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">ESP32-S3 / CONTROL INTERFACE 01</p>
+        <h1>Device <span>Control.</span></h1>
+      </div>
+      <p class="hero-note">
+        Local device management system.
+        Monitor telemetry, inspect connectivity,
+        and send commands to your hardware.
+      </p>
+    </section>
+
+    <section class="overview">
+      <div class="section-label"><span>01 /</span> Live telemetry</div>
+
+      <div class="metrics">
+        <article class="metric">
+          <div class="metric-name">DEVICE STATUS</div>
+          <div class="metric-value red" id="metricOnline">UNKNOWN</div>
+          <div class="metric-note">Connection state</div>
+        </article>
+
+        <article class="metric">
+          <div class="metric-name">LOCAL IP</div>
+          <div class="metric-value" id="metricIP">—</div>
+          <div class="metric-note">ESP32 network address</div>
+        </article>
+
+        <article class="metric">
+          <div class="metric-name">WIFI SIGNAL</div>
+          <div class="metric-value" id="metricRSSI">—</div>
+          <div class="metric-note">Signal strength / dBm</div>
+        </article>
+
+        <article class="metric">
+          <div class="metric-name">UPTIME</div>
+          <div class="metric-value" id="metricUptime">—</div>
+          <div class="metric-note">Time since boot</div>
+        </article>
+      </div>
+    </section>
+
+    <div class="workspace">
+      <div>
+        <section class="section">
+          <div class="section-heading">
+            <div class="section-label"><span>02 /</span> Connection</div>
+            <h2>Backend configuration</h2>
+            <p class="section-description">
+              Hubungkan dashboard ke server lokal kamu.
+            </p>
+          </div>
+
+          <div class="connection-fields">
+            <div>
+              <label for="apiBase">API Base URL</label>
+              <input id="apiBase" type="url"
+                value="http://127.0.0.1:8000"
+                placeholder="http://127.0.0.1:8000"
+                spellcheck="false">
+            </div>
+
+            <div>
+              <label for="token">Dashboard Token</label>
+              <input id="token" type="password"
+                placeholder="Masukkan token dari server/.env"
+                autocomplete="off">
+              <p class="field-help">
+                Token hanya digunakan untuk permintaan dari dashboard ini.
+                Jangan bagikan token kepada orang lain.
+              </p>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button class="button-primary" id="statusBtn">
+              CHECK CONNECTION ↗
+            </button>
+            <button class="button-neutral" id="refreshBtn">
+              REFRESH DATA
+            </button>
+          </div>
+
+          <p class="notice" id="status" role="status" aria-live="polite">
+            Menunggu pemeriksaan koneksi.
+          </p>
+        </section>
+
+        <section class="section">
+          <div class="section-heading">
+            <div class="section-label"><span>03 /</span> Hardware</div>
+            <h2>RGB indicator</h2>
+            <p class="section-description">
+              Status LED terakhir yang dilaporkan backend.
+            </p>
+          </div>
+
+          <div class="metric-value" id="metricLED">UNKNOWN</div>
+          <div class="metric-note">
+            ESP32-S3 onboard addressable RGB LED
+          </div>
+        </section>
+      </div>
+
+      <div>
+        <section class="section">
+          <div class="section-heading">
+            <div class="section-label"><span>04 /</span> Command input</div>
+            <h2>Control terminal</h2>
+            <p class="section-description">
+              Kirim perintah melalui API chat yang sudah ada.
+            </p>
+          </div>
+
+          <form id="chatForm">
+            <label for="message">Natural language command</label>
+            <div class="chat-row">
+              <input id="message" maxlength="500"
+                placeholder="Contoh: nyalakan LED"
+                autocomplete="off" required>
+              <button class="button-primary" type="submit">SEND ↗</button>
+            </div>
+          </form>
+
+          <div class="command-grid">
+            <button class="command" data-command="nyalakan LED">
+              <span>LED ON</span><span class="index">CMD / 01</span>
+            </button>
+            <button class="command" data-command="matikan LED">
+              <span>LED OFF</span><span class="index">CMD / 02</span>
+            </button>
+            <button class="command" data-command="kedipkan LED">
+              <span>BLINK LED</span><span class="index">CMD / 03</span>
+            </button>
+            <button class="command" data-command="cek status">
+              <span>CHECK STATUS</span><span class="index">CMD / 04</span>
+            </button>
+          </div>
+
+          <div class="output-label">Command response / JSON</div>
+          <pre id="chatOutput" aria-live="polite">Belum ada perintah.</pre>
+        </section>
+
+        <section class="section">
+          <div class="section-heading">
+            <div class="section-label"><span>05 /</span> Diagnostics</div>
+            <h2>System data</h2>
+          </div>
+
+          <p class="section-description" style="margin-bottom:12px">
+            Respons mentah dari endpoint status.
+          </p>
+          <pre id="statusOutput">Belum ada data.</pre>
+        </section>
+      </div>
+    </div>
+
+    <footer>
+      <span>AIOT.SYS / ESP32-S3</span>
+      <span>LOCAL NETWORK · PYTHON BACKEND</span>
+    </footer>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function base() {
+      return $('apiBase').value.trim().replace(/\/+$/, '');
+    }
+
+    function headers() {
+      return {
+        'Content-Type': 'application/json',
+        'X-Dashboard-Token': $('token').value.trim()
+      };
+    }
+
+    function formatUptime(ms) {
+      if (ms == null || !Number.isFinite(Number(ms))) return '—';
+
+      const total = Math.floor(Number(ms) / 1000);
+      const days = Math.floor(total / 86400);
+      const hours = Math.floor((total % 86400) / 3600);
+      const minutes = Math.floor((total % 3600) / 60);
+      const seconds = total % 60;
+
+      if (days > 0) return `${days}d ${hours}h`;
+      if (hours > 0) return `${hours}h ${minutes}m`;
+      if (minutes > 0) return `${minutes}m ${seconds}s`;
+      return `${seconds}s`;
+    }
+
+    async function readResponse(res) {
+      const text = await res.text();
+      let data;
+
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = { detail: text || `HTTP ${res.status}` };
+      }
+
+      if (!res.ok) {
+        throw new Error(data.detail || `HTTP ${res.status}`);
+      }
+
+      return data;
+    }
+
+    async function checkStatus() {
+      $('status').textContent = 'Memeriksa koneksi backend...';
+      $('statusBtn').disabled = true;
+      $('refreshBtn').disabled = true;
+
+      try {
+        const res = await fetch(base() + '/api/status', {
+          method: 'GET',
+          headers: headers()
+        });
+
+        const data = await readResponse(res);
+        const device = data.device || data;
+        const online = Boolean(device.online);
+
+        $('status').textContent = online
+          ? 'ESP32 online dan terhubung ke backend.'
+          : 'Backend merespons, tetapi ESP32 belum online.';
+
+        $('topStatus').textContent = online
+          ? 'SYSTEM ONLINE'
+          : 'DEVICE OFFLINE';
+
+        $('statusDot').classList.toggle('online', online);
+
+        $('metricOnline').textContent = online ? 'ONLINE' : 'OFFLINE';
+        $('metricIP').textContent = device.ip || '—';
+
+        $('metricRSSI').textContent = device.rssi == null
+          ? '—'
+          : `${device.rssi} dBm`;
+
+        $('metricUptime').textContent = formatUptime(device.uptime_ms);
+
+        $('metricLED').textContent = device.led == null
+          ? 'UNKNOWN'
+          : (device.led ? 'ON' : 'OFF');
+
+        $('statusOutput').textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        $('status').textContent = 'Gagal: ' + error.message;
+        $('topStatus').textContent = 'CONNECTION ERROR';
+        $('statusDot').classList.remove('online');
+        $('metricOnline').textContent = 'ERROR';
+        $('statusOutput').textContent =
+          error.message +
+          '\n\nPeriksa apakah backend aktif, URL benar, dan token cocok.';
+      } finally {
+        $('statusBtn').disabled = false;
+        $('refreshBtn').disabled = false;
+      }
+    }
+
+    async function sendCommand(message) {
+      $('chatOutput').textContent = 'Mengirim perintah...';
+
+      document.querySelectorAll('[data-command]').forEach((button) => {
+        button.classList.toggle(
+          'selected',
+          button.dataset.command === message
+        );
+      });
+
+      try {
+        const res = await fetch(base() + '/api/chat', {
+          method: 'POST',
+          headers: headers(),
+          body: JSON.stringify({ message })
+        });
+
+        const data = await readResponse(res);
+        $('chatOutput').textContent = JSON.stringify(data, null, 2);
+
+        await checkStatus();
+      } catch (error) {
+        $('chatOutput').textContent =
+          'Perintah gagal: ' + error.message +
+          '\n\nPastikan backend aktif, URL benar, dan token cocok.';
+      }
+    }
+
+    $('statusBtn').addEventListener('click', checkStatus);
+    $('refreshBtn').addEventListener('click', checkStatus);
+
+    $('chatForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const message = $('message').value.trim();
+      if (message) sendCommand(message);
+    });
+
+    document.querySelectorAll('[data-command]').forEach((button) => {
+      button.addEventListener('click', () => {
+        sendCommand(button.dataset.command);
+      });
+    });
+  </script>
+</body>
+</html>
