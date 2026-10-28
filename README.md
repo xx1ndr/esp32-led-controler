@@ -25,7 +25,3 @@ Lihat [panduan setup](docs/setup.md). Jangan unggah file `server/.env`, password
 - HTTP lokal tidak mengenkripsi lalu lintas. Jangan membuka port backend langsung ke internet.
 - Token yang dimasukkan ke dashboard browser dapat dilihat oleh orang yang punya akses ke browser/file tersebut.
 - Dukungan LED bergantung pada board dan pin RGB yang tersedia.
-
-## Lisensi
-
-Belum ada lisensi yang ditambahkan. Jika repository dipublikasikan, tentukan lisensi yang sesuai sebelum mengizinkan penggunaan ulang oleh pihak lain.
